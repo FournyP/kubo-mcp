@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  go-build:
+    uses: ./.github/workflows/go-build.yml
+
+  go-lint:
+    uses: ./.github/workflows/go-lint.yml
+
+  go-unit-tests:
+    uses: ./.github/workflows/go-unit-tests.yml
+
+  release:
+    needs:
+      - go-build
+      - go-lint
+      - go-unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+
+      - name: Cache npm registry for semantic-release
+        uses: actions/cache@v6
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-semantic-release-${{ hashFiles('.github/workflows/release.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-semantic-release-
+
+      # Preset v10 needs conventional-changelog-writer 9; release-notes-generator 14 still ships writer 8.
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx --yes \
+            -p semantic-release@25 \
+            -p @semantic-release/commit-analyzer@13 \
+            -p conventional-changelog-conventionalcommits@9 \
+            -p @semantic-release/release-notes-generator@14 \
+            -p @semantic-release/changelog@7 \
+            -p @semantic-release/git@11 \
+            -p @semantic-release/github@12 \
+            semantic-release
+
+      # Tags pushed with GITHUB_TOKEN trigger no workflow, so later jobs read the tag from here.
+      - name: Read the released tag
+        id: tag
+        run: echo "tag=$(git describe --tags --exact-match HEAD 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+
+  goreleaser:
+    needs: release
+    if: needs.release.outputs.tag != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.27.3"
+          cache: false
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-images:
+    needs: release
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/release-images.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}

@@ -1,0 +1,52 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - unused
+  settings:
+    lll:
+      line-length: 120
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      # golines aligns struct tags past the cap; tag lines cannot be wrapped.
+      - linters:
+          - lll
+        source: '`[a-z_]+:"'
+      # Test-suite mock fields and constructors: generated mock type names make the lines unwrappable.
+      - linters:
+          - lll
+        source: '[a-z_]+_mocks\.(NewMock|Mock)'
+      # Func-literal signatures (e.g. gomock DoAndReturn callbacks): golines cannot wrap them.
+      - linters:
+          - lll
+        source: \bfunc\(.*\{$
+      # Long single string literals (tool descriptions, error messages): wrapping would splice the content.
+      - linters:
+          - lll
+        source: '"[^"]{70,}"'
+      # Fully-qualified kubo_mcp_* identifiers: the package prefix alone eats most of the budget.
+      - linters:
+          - lll
+        source: kubo_mcp_[a-z_]+\.
+    paths:
+      - tests/.*_mocks
+formatters:
+  enable:
+    - golines
+  settings:
+    golines:
+      max-len: 120
+  exclusions:
+    generated: lax
+    paths:
+      - tests/.*_mocks

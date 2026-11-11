@@ -1,0 +1,194 @@
+# Hand-maintained subset of the Kubo RPC API: Kubo ships no OpenAPI spec.
+openapi: 3.0.3
+info:
+  title: Kubo RPC API (subset)
+  version: v0
+paths:
+  /api/v0/add:
+    post:
+      operationId: Add
+      parameters:
+        - name: cid-version
+          in: query
+          schema:
+            type: integer
+        - name: pin
+          in: query
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: The added file.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddResult"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v0/cat:
+    post:
+      operationId: Cat
+      parameters:
+        - $ref: "#/components/parameters/Arg"
+        - name: length
+          in: query
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: The raw file content.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v0/files/stat:
+    post:
+      operationId: FilesStat
+      parameters:
+        - $ref: "#/components/parameters/Arg"
+      responses:
+        "200":
+          description: The file or directory description.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilesStatResult"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v0/pin/add:
+    post:
+      operationId: PinAdd
+      parameters:
+        - $ref: "#/components/parameters/Arg"
+      responses:
+        "200":
+          description: The pinned CIDs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinResult"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v0/pin/rm:
+    post:
+      operationId: PinRm
+      parameters:
+        - $ref: "#/components/parameters/Arg"
+      responses:
+        "200":
+          description: The unpinned CIDs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinResult"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v0/pin/ls:
+    post:
+      operationId: PinLs
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [direct, indirect, recursive, all]
+      responses:
+        "200":
+          description: The pins, keyed by CID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinLsResult"
+        default:
+          $ref: "#/components/responses/Error"
+components:
+  parameters:
+    Arg:
+      name: arg
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    Error:
+      description: Kubo command error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KuboError"
+  schemas:
+    KuboError:
+      type: object
+      required: [Message]
+      properties:
+        Message:
+          type: string
+        Code:
+          type: integer
+        Type:
+          type: string
+    AddResult:
+      type: object
+      required: [Name, Hash, Size]
+      properties:
+        Name:
+          type: string
+        Hash:
+          type: string
+        # Kubo encodes the size as a decimal string.
+        Size:
+          type: string
+    FilesStatResult:
+      type: object
+      required: [Hash, Size, CumulativeSize, Blocks, Type]
+      properties:
+        Hash:
+          type: string
+        Size:
+          type: integer
+          format: int64
+        CumulativeSize:
+          type: integer
+          format: int64
+        Blocks:
+          type: integer
+          format: int64
+        Type:
+          type: string
+    PinResult:
+      type: object
+      required: [Pins]
+      properties:
+        Pins:
+          type: array
+          items:
+            type: string
+    PinLsEntry:
+      type: object
+      required: [Type]
+      properties:
+        Type:
+          type: string
+    PinLsResult:
+      type: object
+      required: [Keys]
+      properties:
+        Keys:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/PinLsEntry"

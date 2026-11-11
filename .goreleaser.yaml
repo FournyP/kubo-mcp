@@ -1,0 +1,47 @@
+version: 2
+
+builds:
+  - id: kubo-mcp
+    main: ./src/kubo_mcp_host
+    binary: kubo-mcp
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/FournyP/kubo-mcp/src/kubo_mcp_host/configurations.Version={{ .Version }}
+
+archives:
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: "checksums.txt"
+
+# semantic-release creates the GitHub release; goreleaser only attaches the archives.
+release:
+  mode: append
+  github:
+    owner: FournyP
+    name: kubo-mcp
+
+changelog:
+  disable: true

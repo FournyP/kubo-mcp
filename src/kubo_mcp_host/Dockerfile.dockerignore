@@ -1,0 +1,10 @@
+# Named after the Dockerfile: Docker skips a nested .dockerignore.
+.git
+.github
+.vscode
+.zed
+.claude
+dist
+tests
+**/.env
+**/appsettings.json

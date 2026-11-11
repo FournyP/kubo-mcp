@@ -1,0 +1,12 @@
+[
+  {
+    "label": "Kubo MCP Host",
+    "adapter": "Delve",
+    "request": "launch",
+    "mode": "debug",
+    "program": "$ZED_WORKTREE_ROOT/src/kubo_mcp_host",
+    "cwd": "$ZED_WORKTREE_ROOT/src/kubo_mcp_host",
+    "env": {},
+    "args": []
+  }
+]
