@@ -8,3 +8,5 @@ dist
 tests
 **/.env
 **/appsettings.json
+node_modules
+.railway

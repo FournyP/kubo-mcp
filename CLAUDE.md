@@ -9,8 +9,8 @@ Stateless HTTP MCP server storing files on IPFS through Kubo's RPC API. One Go m
 | `kubo_mcp` | domain: use cases (+ requests/responses), ports, models, settings |
 | `kubo_mcp_http_kubo` | Kubo RPC adapter, generated client |
 | `kubo_mcp_http_downloader` | URL download adapter + SSRF guard |
-| `kubo_mcp_mcp` | MCP tools + `/mcp` controller |
-| `kubo_mcp_host` | composition root, `main.go`, Dockerfile |
+| `kubo_mcp_mcp` | MCP tools, `/mcp` controller, bearer auth middleware |
+| `kubo_mcp_host` | composition root, routes, `main.go`, Dockerfile |
 | `kubo_mcp_common` | errors, koanf, logging |
 
 - Business logic lives in `kubo_mcp` only; adapters translate.
@@ -41,6 +41,10 @@ Stateless HTTP MCP server storing files on IPFS through Kubo's RPC API. One Go m
 ## Generated Kubo client
 
 `clients/oapi_client.gen.go` comes from the hand-written `clients/kubo_rpc.v3.yaml` (oapi-codegen v2.5.1). Never edit it. New command: update the YAML, run `clients/generate_client.sh`, `make mocks`, then smoke-test against `ipfs/kubo`.
+
+## Railway
+
+`.railway/railway.ts` (TypeScript, `npm run plan|apply`) declares only `kubo-mcp`. Keep its env in sync when adding a setting.
 
 ## Commands
 

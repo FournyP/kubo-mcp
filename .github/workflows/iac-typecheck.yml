@@ -1,0 +1,35 @@
+# Catches a broken .railway/railway.ts before `railway config plan` does.
+name: IaC Typecheck
+
+on:
+  pull_request:
+    paths:
+      - ".railway/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/iac-typecheck.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".railway/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/iac-typecheck.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck

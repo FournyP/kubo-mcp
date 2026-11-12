@@ -110,3 +110,6 @@ appsettings*
 
 # Personal Claude Code settings (not committed)
 .claude/settings.local.json
+
+### Node (Railway IaC) ###
+node_modules/

@@ -7,6 +7,7 @@ import (
 	"go.uber.org/dig"
 
 	"github.com/FournyP/kubo-mcp/src/kubo_mcp_mcp"
+	"github.com/FournyP/kubo-mcp/src/kubo_mcp_mcp/middlewares"
 )
 
 const (
@@ -43,14 +44,25 @@ func newMCPServer(toolRegistrar *kubo_mcp_mcp.ToolRegistrar) (*mcp.Server, error
 	return server, nil
 }
 
-func newHttpHandler(mcpController *kubo_mcp_mcp.MCPController) http.Handler {
+type newHttpHandlerParams struct {
+	dig.In
+
+	BearerAuthMiddleware *middlewares.BearerAuthMiddleware
+	MCPController        *kubo_mcp_mcp.MCPController
+}
+
+func newHttpHandler(params newHttpHandlerParams) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET "+HealthEndpoint, func(writer http.ResponseWriter, _ *http.Request) {
 		writer.WriteHeader(http.StatusOK)
 		_, _ = writer.Write([]byte("ok"))
 	})
-	mcpController.RegisterRoutes(mux)
+
+	// Every route but /health goes through auth.
+	authenticated := http.NewServeMux()
+	params.MCPController.RegisterRoutes(authenticated)
+	mux.Handle("/", params.BearerAuthMiddleware.Wrap(authenticated))
 
 	return mux
 }
