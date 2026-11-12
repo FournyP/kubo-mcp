@@ -4,6 +4,7 @@ import (
 	"go.uber.org/dig"
 
 	"github.com/FournyP/kubo-mcp/src/kubo_mcp_mcp"
+	"github.com/FournyP/kubo-mcp/src/kubo_mcp_mcp/middlewares"
 	"github.com/FournyP/kubo-mcp/src/kubo_mcp_mcp/settings"
 )
 
@@ -17,6 +18,17 @@ type newToolRegistrarParams struct {
 func AddKuboMcpMCPConfiguration(container *dig.Container) {
 	// Settings
 	err := container.Provide(settings.NewMcpSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(settings.NewAuthSettings)
+	if err != nil {
+		panic(err)
+	}
+
+	// Middlewares
+	err = container.Provide(middlewares.NewBearerAuthMiddleware)
 	if err != nil {
 		panic(err)
 	}

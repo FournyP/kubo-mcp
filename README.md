@@ -17,10 +17,22 @@ Stateless HTTP MCP server (`POST /mcp`) that stores files on IPFS through a [Kub
 
 ```bash
 docker run --rm -p 3000:3000 -e KUBO__API_URL=http://host.docker.internal:5001 ghcr.io/fournyp/kubo-mcp:latest
-claude mcp add kubo --transport http http://localhost:3000/mcp
+claude mcp add kubo --transport http http://localhost:3000/mcp --header "Authorization: Bearer <key>"
 ```
 
-`GET /health` answers `ok`.
+`GET /health` answers `ok` without auth.
+
+### Railway
+
+`.railway/railway.ts` declares the `kubo-mcp` service, built from this repo. It points at an existing Kubo: `http://<kubo>.railway.internal:5001` in the same project, its public URL plus `KUBO__AUTHORIZATION` otherwise.
+
+```bash
+npm install && railway link
+export AUTH__API_KEYS=$(openssl rand -hex 32) KUBO__API_URL=... KUBO__AUTHORIZATION="Bearer ..."
+npm run plan && npm run apply
+```
+
+Then add a public domain to `kubo-mcp`.
 
 ## Configuration
 
@@ -29,6 +41,7 @@ Read from an optional `appsettings.json`, overridden by `SECTION__FIELD` env var
 | Key | Default |
 | --- | --- |
 | `host.port` | `3000` |
+| `auth.api_keys` | none (open); bearer tokens, comma-separated |
 | `kubo.api_url` | `http://127.0.0.1:5001` |
 | `kubo.authorization` | sent verbatim to Kubo |
 | `kubo.request_timeout` / `kubo.upload_timeout` | `60s` / `10m` |
@@ -41,7 +54,7 @@ Read from an optional `appsettings.json`, overridden by `SECTION__FIELD` env var
 
 ## Security
 
-- HTTP mode has no auth: put a gateway in front or keep it private.
+- Set `auth.api_keys`: clients send `Authorization: Bearer <key>`. Empty keeps `/mcp` open, for local use only.
 - Never expose Kubo's RPC port (`:5001`).
 - `add_file_from_url` refuses non-public IPs unless `downloader.allow_private_networks` is set.
 
