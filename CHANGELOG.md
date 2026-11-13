@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/FournyP/kubo-mcp/compare/v1.1.0...v1.1.1) (2026-11-13)
+
+### :wrench: Miscellaneous Chores
+
+* add template icon ([#2](https://github.com/FournyP/kubo-mcp/issues/2)) ([43e90ef](https://github.com/FournyP/kubo-mcp/commit/43e90ef107410bc930587b9d20d891275f248579))
+
 ## [1.1.0](https://github.com/FournyP/kubo-mcp/compare/v1.0.0...v1.1.0) (2026-11-12)
 
 ### :sparkles: Features
