@@ -1,6 +1,6 @@
 module github.com/FournyP/kubo-mcp
 
-go 1.27.1
+go 1.27.4
 
 require (
 	github.com/ipfs/go-cid v0.6.2
