@@ -1,3 +1,9 @@
+## [1.1.2](https://github.com/FournyP/kubo-mcp/compare/v1.1.1...v1.1.2) (2026-11-21)
+
+### :wrench: Miscellaneous Chores
+
+* upgrade Go to 1.27.4 ([#3](https://github.com/FournyP/kubo-mcp/issues/3)) ([22a179f](https://github.com/FournyP/kubo-mcp/commit/22a179f6f601ecb13a46f14e9ee509b04c912d20))
+
 ## [1.1.1](https://github.com/FournyP/kubo-mcp/compare/v1.1.0...v1.1.1) (2026-11-13)
 
 ### :wrench: Miscellaneous Chores
